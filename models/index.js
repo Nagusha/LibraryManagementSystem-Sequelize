@@ -1,43 +1,29 @@
-'use strict';
+const sequelize = require('../config/database');
+const Author = require('./author');
+const Book = require('./book');
+const Loan = require('./loan');
+const Members = require('./members');
+const Reservations = require('./reservations');
 
-const fs = require('fs');
-const path = require('path');
-const Sequelize = require('sequelize');
-const process = require('process');
-const basename = path.basename(__filename);
-const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/../config/config.json')[env];
-const db = {};
+Author.hasMany(Book, { foreignKey: 'authorId' });
+Book.belongsTo(Author, { foreignKey: 'authorId' });
 
-let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
-} else {
-  sequelize = new Sequelize(config.database, config.username, config.password, config);
-}
+Loan.hasMany(Members, { foreignKey: 'loanId' });
+Members.belongsTo(Loan, { foreignKey: 'loanId' });
 
-fs
-  .readdirSync(__dirname)
-  .filter(file => {
-    return (
-      file.indexOf('.') !== 0 &&
-      file !== basename &&
-      file.slice(-3) === '.js' &&
-      file.indexOf('.test.js') === -1
-    );
-  })
-  .forEach(file => {
-    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
-    db[model.name] = model;
-  });
+Book.hasMany(Reservations, { foreignKey: 'bookId' });
+Reservations.belongsTo(Book, { foreignKey: 'bookId' });
 
-Object.keys(db).forEach(modelName => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
-  }
-});
+Loan.hasMany(Reservations, { foreignKey: 'loanId' });
+Reservations.belongsTo(Loan, { foreignKey: 'loanId' });
+//}
 
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
 
-module.exports = db;
+module.exports = {
+    sequelize,
+    Author,
+    Book,
+    Loan,
+    Members,
+    Reservations
+};
