@@ -8,6 +8,7 @@ const loanRouter = require('./routers/loan.router');
 const membersRouter = require('./routers/members.router');
 const reservationsRouter = require('./routers/reservations.router');
 
+const authorQueryRouter = require('./quering/authorquering');
 const reservationQueryRouter = require('./quering/reservationsquering');
 const bookQueryRouter = require('./quering/bookquering');
 const membersQueryRouter = require('./quering/membersquering');
@@ -23,20 +24,8 @@ const { createReservation, getAllReservations, getReservationById, updateReserva
 const Author = require('./models/author');
 const Book = require('./models/book');
 const Loan = require('./models/loan');
-const Members = require('./models/members');
-const Reservations = require('./models/reservations');
-
-const authorindex = require('./indexes/authorindex');
-const bookindex = require('./indexes/bookindex');
-const reservationsindex = require('./indexes/reservationsindex');
-const loanIndex = require('./indexes/loanindex');
-const membersindex = require('./indexes/membersindex');
-
-const authorTransactions = require('./transactions/authortransactions');
-const bookTransactions = require('./transactions/booktransaction');
-const loanTransactions = require('./transactions/loantransactions');
-const membersTransactions = require('./transactions/memberstransactions');
-const reservationsTransactions = require('./transactions/reservationstransaction');
+const Member = require('./models/members');
+const Reservation = require('./models/reservations');
 
 const app = express();
 app.use(bodyParser.json());
@@ -55,22 +44,52 @@ app.get('/api', (req, res) => {
 });
 
 
+/*const authorindex = require('./indexes/authorindex');
+const bookindex = require('./indexes/bookindex');
+const reservationsindex = require('./indexes/reservationsindex');
+const loanIndex = require('./indexes/loanindex');
+const membersindex = require('./indexes/membersindex');
+
+const authorTransactions = require('./transactions/authortransactions');
+const bookTransactions = require('./transactions/booktransaction');
+const loanTransactions = require('./transactions/loantransactions');
+const membersTransactions = require('./transactions/memberstransactions');
+const reservationsTransactions = require('./transactions/reservationstransaction');
+*/
+
 app.use('/author', authorRouter);
 app.use('/book', bookRouter);
 app.use('/loan', loanRouter);
 app.use('/members', membersRouter);
 app.use('/reservations', reservationsRouter);
 
+app.use('/transactions/author', require('./transactions/authortransactions'));
+app.use('/transactions/loan', require('./transactions/loantransactions'));
+app.use('/transactions/book', require('./transactions/booktransaction'));
+app.use('/transactions/member', require('./transactions/memberstransactions'));
+app.use('/transactions/author', require('./transactions/authortransactions'));
+app.use('/transactions/reservations', require('./transactions/reservationstransaction'));
+
+app.use('/indexes/authorindex', require('./indexes/authorindex'));
+app.use('/indexes/bookindex', require('./indexes/bookindex'));
+app.use('/indexes/membersindex', require('./indexes/membersindex'));
+app.use('/indexes/loanindex', require('./indexes/loanindex'));
+app.use('/indexes/reservationsindex', require('./indexes/reservationsindex'));
+
+app.use('/quering/authorquering', authorQueryRouter);
 app.use('/quering/reservationsquering', reservationQueryRouter);
 app.use('/quering/bookquering', bookQueryRouter);
 app.use('/quering/membersquering', membersQueryRouter);
 app.use('/quering/loanquering', loanQueryRouter);
-app.use('/transactions/loan', loanTransactions);
+
+/*app.use('/transactions/loan', loanTransactions);
 app.use('/transactions/book', bookTransactions);
 app.use('/transactions/member', membersTransactions);
 app.use('/transactions/author', authorTransactions);
 app.use('/transactions/reservations', reservationsTransactions);
-
+app.use ('/indexes/authorindex', authorindex);
+app.use('/indexes/bookindex', bookindex);
+*/
 (async () => {
   try {
     await sequelize.authenticate();
@@ -145,6 +164,9 @@ app.use('/transactions/reservations', reservationsTransactions);
       console.error('Error creating member:', error);
   }
 })();
+
+initializeApp();
+
 async function initializeApp() {
   try {
     // Author CRUD operations
@@ -182,27 +204,8 @@ async function initializeApp() {
     await getReservationById(1);
     await updateReservation(1, { reservation_date: new Date('2024-08-15') });
     await deleteReservationById(1);
-    /*app.all('my-route', (req, res) => {
-      res.send('This route could have been HTTP method!');
-    });
-
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });*/
-    /*app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-
-// Call the initialization function
-initialize();
-*/
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+  
 } catch (error) {
 console.error('Unable to connect to the database:', error);
 }
 }
-
-// Call the async function to initialize the application
-initializeApp();
